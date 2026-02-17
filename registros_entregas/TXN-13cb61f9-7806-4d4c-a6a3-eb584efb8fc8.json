@@ -1,0 +1,9 @@
+{
+    "id_transaccion": "TXN-13cb61f9-7806-4d4c-a6a3-eb584efb8fc8",
+    "id_estudiante": "STU-TEST",
+    "nombre_archivo": "tarea_test.py",
+    "tamano_bytes": 1024,
+    "tamano_legible": "1.0 KB",
+    "fecha_hora": "2026-02-17T01:06:55.781291",
+    "estado": "RECIBIDO"
+}
