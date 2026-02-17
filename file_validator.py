@@ -1,4 +1,4 @@
-# Responsabilidad única: validar que el archivo cumpla con las reglas
+# validar que el archivo cumpla con las reglas
 
 EXTENSION_PERMITIDA = ".py"
 TAMANO_MAXIMO_BYTES = 2 * 1024 * 1024  #2 mb
