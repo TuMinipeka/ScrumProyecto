@@ -1,0 +1,21 @@
+{
+    "cod_tarea": "TEST-UNIT",
+    "id_profesor": "PROF-TEST",
+    "fecha_creacion": "2026-02-17T06:05:17.791266",
+    "total_casos": 2,
+    "puntaje_total": 10.0,
+    "casos": [
+        {
+            "id": 1,
+            "entrada": "2 3",
+            "esperado": "5",
+            "puntaje": 5.0
+        },
+        {
+            "id": 2,
+            "entrada": "10 5",
+            "esperado": "15",
+            "puntaje": 5.0
+        }
+    ]
+}
