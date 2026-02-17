@@ -1,6 +1,8 @@
 # =============================================================
 # main.py
-# Orquestador principal — Historia de Usuario #1: Carga de Archivos
+# Orquestador principal — Sprint 1
+# Historia #1: Carga de Archivos
+# Historia #2: Configuración de Pruebas
 # =============================================================
 import os
 
@@ -12,30 +14,62 @@ from file_validator import validar_archivo
 from transaction_service import (
     generar_id_transaccion, guardar_registro, guardar_archivo_fisico,
 )
-from file_browser import elegir_archivo    # <-- nuevo módulo
+from file_browser import elegir_archivo
+from test_case_ui import ejecutar_panel_profesor   # Historia #2
+
+
+# ── Menú de rol ───────────────────────────────────────────────
+
+def elegir_rol() -> str:
+    """
+    Pregunta si el usuario es estudiante o profesor.
+
+    Retorna:
+        "estudiante" o "profesor"
+    """
+    print()
+    print("  ¿Con qué rol ingresas?")
+    print()
+    print("  [1] Estudiante  — Entregar tarea")
+    print("  [2] Profesor    — Configurar casos de prueba")
+    print()
+    while True:
+        opcion = input("  Elige (1 o 2): ").strip()
+        if opcion == "1":
+            return "estudiante"
+        if opcion == "2":
+            return "profesor"
+        print("  ⚠  Escribe 1 o 2.")
+
+
+# ── Flujo del estudiante (Historia #1) ───────────────────────
+
+def flujo_estudiante():
+    """Flujo completo de entrega de archivo para el estudiante."""
+    id_estudiante = pedir_id_estudiante()
+
+    while True:
+        ruta = elegir_archivo()
+        procesar_entrega(id_estudiante, ruta)
+
+        if not preguntar_continuar():
+            break
 
 
 def procesar_entrega(id_estudiante: str, ruta_archivo: str):
-    """
-    Ejecuta el flujo completo de una entrega dado un archivo ya localizado.
-    """
     mostrar_separador()
 
-    # ── PASO 1: Extraer nombre y tamaño ──────────────────────────
     nombre_archivo = os.path.basename(ruta_archivo)
     tamano_bytes   = os.path.getsize(ruta_archivo)
 
-    # ── PASO 2: Validar extensión y tamaño ───────────────────────
     es_valido, mensaje_error = validar_archivo(nombre_archivo, tamano_bytes)
     if not es_valido:
         mostrar_error(mensaje_error)
         return
 
-    # ── PASO 3: Leer contenido ───────────────────────────────────
     with open(ruta_archivo, "rb") as f:
         contenido = f.read()
 
-    # ── PASO 4: Generar ID y guardar ─────────────────────────────
     id_transaccion = generar_id_transaccion()
     guardar_archivo_fisico(id_transaccion, nombre_archivo, contenido)
     registro = guardar_registro(
@@ -44,25 +78,35 @@ def procesar_entrega(id_estudiante: str, ruta_archivo: str):
         tamano_bytes=tamano_bytes,
         id_estudiante=id_estudiante,
     )
-
-    # ── PASO 5: Mostrar éxito ────────────────────────────────────
     mostrar_exito(registro)
 
 
+# ── Flujo del profesor (Historia #2) ─────────────────────────
+
+def flujo_profesor():
+    """Flujo completo de configuración de pruebas para el profesor."""
+    while True:
+        ejecutar_panel_profesor()
+        print()
+        respuesta = input("  ¿Configurar otra tarea? (s/n): ").strip().lower()
+        if respuesta != "s":
+            break
+
+
+# ── Punto de entrada ─────────────────────────────────────────
+
 def main():
     mostrar_bienvenida()
-    id_estudiante = pedir_id_estudiante()
+    rol = elegir_rol()
 
-    while True:
-        # El estudiante navega sus carpetas y elige el archivo
-        ruta = elegir_archivo()
-        procesar_entrega(id_estudiante, ruta)
+    if rol == "estudiante":
+        flujo_estudiante()
+    elif rol == "profesor":
+        flujo_profesor()
 
-        if not preguntar_continuar():
-            print()
-            print("  Sesion finalizada. Hasta pronto!")
-            print()
-            break
+    print()
+    print("  Sesion finalizada. Hasta pronto!")
+    print()
 
 
 if __name__ == "__main__":
