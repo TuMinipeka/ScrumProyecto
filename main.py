@@ -1,8 +1,7 @@
 # =============================================================
-# main.py
-# Orquestador principal — Sprint 1
+# main.py — Orquestador principal
 # Historia #1: Carga de Archivos
-# Historia #2: Configuración de Pruebas
+# Historia #2: Configuración de Pruebas + Calificación
 # =============================================================
 import os
 
@@ -15,22 +14,18 @@ from transaction_service import (
     generar_id_transaccion, guardar_registro, guardar_archivo_fisico,
 )
 from file_browser import elegir_archivo
-from test_case_ui import ejecutar_panel_profesor   # Historia #2
+from test_case_ui import ejecutar_panel_profesor
+from grader import calificar
+from grader_ui import pedir_cod_tarea, mostrar_resultados
 
 
 # ── Menú de rol ───────────────────────────────────────────────
 
 def elegir_rol() -> str:
-    """
-    Pregunta si el usuario es estudiante o profesor.
-
-    Retorna:
-        "estudiante" o "profesor"
-    """
     print()
     print("  ¿Con qué rol ingresas?")
     print()
-    print("  [1] Estudiante  — Entregar tarea")
+    print("  [1] Estudiante  — Entregar y calificar tarea")
     print("  [2] Profesor    — Configurar casos de prueba")
     print()
     while True:
@@ -42,21 +37,40 @@ def elegir_rol() -> str:
         print("  ⚠  Escribe 1 o 2.")
 
 
-# ── Flujo del estudiante (Historia #1) ───────────────────────
+# ── Flujo del estudiante ──────────────────────────────────────
 
 def flujo_estudiante():
-    """Flujo completo de entrega de archivo para el estudiante."""
     id_estudiante = pedir_id_estudiante()
 
     while True:
+        # Paso 1: el estudiante elige su archivo
         ruta = elegir_archivo()
-        procesar_entrega(id_estudiante, ruta)
+
+        # Paso 2: validar y registrar la entrega
+        archivo_registrado = procesar_entrega(id_estudiante, ruta)
+
+        # Paso 3: si la entrega fue válida, preguntar si quiere calificar
+        if archivo_registrado:
+            print()
+            respuesta = input("  ¿Quieres calificar este archivo ahora? (s/n): ").strip().lower()
+            if respuesta == "s":
+                cod_tarea   = pedir_cod_tarea()
+                calificacion = calificar(ruta, cod_tarea)
+
+                if "error" in calificacion:
+                    mostrar_error(calificacion["error"])
+                else:
+                    mostrar_resultados(calificacion)
 
         if not preguntar_continuar():
             break
 
 
-def procesar_entrega(id_estudiante: str, ruta_archivo: str):
+def procesar_entrega(id_estudiante: str, ruta_archivo: str) -> bool:
+    """
+    Valida y registra la entrega.
+    Retorna True si fue exitosa, False si falló.
+    """
     mostrar_separador()
 
     nombre_archivo = os.path.basename(ruta_archivo)
@@ -65,7 +79,7 @@ def procesar_entrega(id_estudiante: str, ruta_archivo: str):
     es_valido, mensaje_error = validar_archivo(nombre_archivo, tamano_bytes)
     if not es_valido:
         mostrar_error(mensaje_error)
-        return
+        return False
 
     with open(ruta_archivo, "rb") as f:
         contenido = f.read()
@@ -79,12 +93,12 @@ def procesar_entrega(id_estudiante: str, ruta_archivo: str):
         id_estudiante=id_estudiante,
     )
     mostrar_exito(registro)
+    return True
 
 
-# ── Flujo del profesor (Historia #2) ─────────────────────────
+# ── Flujo del profesor ────────────────────────────────────────
 
 def flujo_profesor():
-    """Flujo completo de configuración de pruebas para el profesor."""
     while True:
         ejecutar_panel_profesor()
         print()
